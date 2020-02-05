@@ -6,7 +6,9 @@ metadata:
     app: website
 spec:
   ports:
-    - port: 8080
+  - nodePort: 30080
+    port: 8080
+    targetPort: 8080
   selector:
     app: website
     tier: frontend
@@ -21,7 +23,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 100Mi
+    storage: 1Gi
   accessModes:
     - ReadOnlyMany
   hostPath:
@@ -36,7 +38,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 300Mi
+    storage: 1Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
@@ -51,7 +53,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 50Mi
+    storage: 1Gi
   accessModes:
     - ReadOnlyMany
   hostPath:
@@ -69,7 +71,7 @@ spec:
     - ReadOnlyMany
   resources:
     requests:
-      storage: 100Mi
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -83,7 +85,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 300Mi
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -97,7 +99,7 @@ spec:
     - ReadOnlyMany
   resources:
     requests:
-      storage: 50Mi
+      storage: 1Gi
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
@@ -139,6 +141,8 @@ spec:
           value: mysql
         - name: WORDPRESS_site_admin_email
           value: dgopidas@genixventures.com
+        - name: WORDPRESS_siteurl
+          value: http://10.0.2.15:30080
         - name: WORDPRESS_site_admin_password
           value: 4dmin
         - name: WORDPRESS_site_admin_username
@@ -168,4 +172,3 @@ spec:
         persistentVolumeClaim:
           claimName: website-claim2
           readOnly: true
-
