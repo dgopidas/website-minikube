@@ -1,0 +1,156 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  labels:
+    app: website
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: website
+    tier: mysql
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-claim0
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 400Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/divya/whitecloudglobal/run-config/data/mysql"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-claim1
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 50Mi
+  accessModes:
+    - ReadOnlyMany
+  hostPath:
+    path: "/tmp/divya/whitecloudglobal/run-config/init.sql"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-claim2
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadOnlyMany
+  hostPath:
+    path: "/tmp/divya/whitecloudglobal/run-config/whitecloud-db-20200114.sql"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-claim0
+  labels:
+    app: website
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 400Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-claim1
+  labels:
+    app: website
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 50Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-claim2
+  labels:
+    app: website
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: website
+spec:
+  selector:
+    matchLabels:
+      app: website
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: website
+        tier: mysql
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: mysql
+        env:
+        - name: MYSQL_PASSWORD
+          value: dev
+        - name: MYSQL_ROOT_PASSWORD
+          value: dev
+        - name: MYSQL_USER
+          value: dev
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-claim0
+        - mountPath: /docker-entrypoint-initdb.d/init.sql
+          name: mysql-claim1
+          readOnly: true
+        - mountPath: /opt/import.sql
+          name: mysql-claim2
+          readOnly: true
+      restartPolicy: Always
+      volumes:
+      - name: mysql-claim0
+        persistentVolumeClaim:
+          claimName: mysql-claim0
+      - name: mysql-claim1
+        persistentVolumeClaim:
+          claimName: mysql-claim1
+          readOnly: true
+      - name: mysql-claim2
+        persistentVolumeClaim:
+          claimName: mysql-claim2
+          readOnly: true
+

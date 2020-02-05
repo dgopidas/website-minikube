@@ -1,0 +1,171 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: website
+  labels:
+    app: website
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: website
+    tier: frontend
+  type: NodePort
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: website-claim0
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadOnlyMany
+  hostPath:
+    path: "/tmp/divya/whitecloudglobal/run-config/bootstrap.sh"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: website-claim1
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 300Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/divya/whitecloudglobal/run-config/data/wp-content"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: website-claim2
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 50Mi
+  accessModes:
+    - ReadOnlyMany
+  hostPath:
+    path: "/tmp/divya/whitecloudglobal/rootfs/var/www/tools"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: website-claim0
+  labels:
+    app: website
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: website-claim1
+  labels:
+    app: website
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 300Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: website-claim2
+  labels:
+    app: website
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 50Mi
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: website
+  labels:
+    app: website
+spec:
+  selector:
+    matchLabels:
+      app: website
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: website
+        tier: frontend
+    spec:
+      containers:
+      - image: whitecloud-image1
+        name: whitecloudwebsite
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: LOG_LEVEL
+          value: DEBUG
+        - name: WORDPRESS_BOOTSTRAP
+          value: /bootstrap.sh
+        - name: WORDPRESS_blogname
+          value: White Cloud Global
+        - name: WORDPRESS_db_admin_password
+          value: dev
+        - name: WORDPRESS_db_admin_user_name
+          value: dev
+        - name: WORDPRESS_db_database_name
+          value: website
+        - name: WORDPRESS_db_host_name
+          value: mysql
+        - name: WORDPRESS_site_admin_email
+          value: dgopidas@genixventures.com
+        - name: WORDPRESS_site_admin_password
+          value: 4dmin
+        - name: WORDPRESS_site_admin_username
+          value: admin
+        ports:
+        - containerPort: 8080
+          name: website
+        volumeMounts:
+        - mountPath: /bootstrap.sh
+          name: website-claim0
+          readOnly: true
+        - mountPath: /var/www/html/wp-content
+          name: website-claim1
+        - mountPath: /var/www/tools
+          name: website-claim2
+          readOnly: true
+      restartPolicy: Always
+      volumes:
+      - name: website-claim0
+        persistentVolumeClaim:
+          claimName: website-claim0
+          readOnly: true
+      - name: website-claim1
+        persistentVolumeClaim:
+          claimName: website-claim1
+      - name: website-claim2
+        persistentVolumeClaim:
+          claimName: website-claim2
+          readOnly: true
+
