@@ -142,7 +142,7 @@ spec:
         - name: WORDPRESS_site_admin_email
           value: dgopidas@genixventures.com
         - name: WORDPRESS_siteurl
-          value: http://10.0.2.15:30080
+          value: http://localhost:30080
         - name: WORDPRESS_site_admin_password
           value: 4dmin
         - name: WORDPRESS_site_admin_username
