@@ -21,7 +21,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 400Mi
+    storage: 1Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
@@ -36,7 +36,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 50Mi
+    storage: 1Gi
   accessModes:
     - ReadOnlyMany
   hostPath:
@@ -51,7 +51,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 100Mi
+    storage: 1Gi
   accessModes:
     - ReadOnlyMany
   hostPath:
@@ -69,7 +69,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 400Mi
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -83,7 +83,7 @@ spec:
     - ReadOnlyMany
   resources:
     requests:
-      storage: 50Mi
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -97,7 +97,7 @@ spec:
     - ReadOnlyMany
   resources:
     requests:
-      storage: 100Mi
+      storage: 1Gi
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
@@ -153,4 +153,3 @@ spec:
         persistentVolumeClaim:
           claimName: mysql-claim2
           readOnly: true
-
